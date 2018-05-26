@@ -1,10 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-    <!--
-	测试版俄罗斯方块V0.7
-	编写日期:2018-05-24
--->
     <title> 俄罗斯方块 </title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <style>
@@ -127,6 +123,7 @@
             if (activity_shape_xy[i] == 1 || activity_shape_xy[i] == 2 || map_shape_xy[i] == 2) {
                 main_map_block[i].style.background = "red";
             }
+            main_map_block[i].innerHTML = i;
         }
     }
 
@@ -139,7 +136,6 @@
         }
     }
 
-    // 控制移动
     function control_move(e) {
         console.log(e)
         let MAX = 0;
@@ -153,7 +149,7 @@
             }
         }
 
-        if (map_shape_xy[MAX + 10] == undefined ||
+        if (activity_shape_xy[MAX + 10] == undefined ||
             map_shape_xy[activity_shape_temp_sign[0] + 10] == 2 || map_shape_xy[activity_shape_temp_sign[1] + 10] == 2 ||
             map_shape_xy[activity_shape_temp_sign[2] + 10] == 2 || map_shape_xy[activity_shape_temp_sign[3] + 10] == 2) {
             for (let i = 0; i < map_shape_xy.length; i++) { // ==> 转实 2
@@ -165,22 +161,31 @@
         } else {
             switch (e) {
 
-                case 1:             //上
+                case 1:
 
                     break;
 
-                case 2:             //下
+                case 2:
                     activity_shape_xy.splice(141, 10);
                     activity_shape_xy.unshift(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
                     break;
 
-                case 3:             //左
-                    activity_shape_xy.splice(0, 1);
+                case 3:
+                    if ((activity_shape_temp_sign[0] - 1) % 10 != 9 && (activity_shape_temp_sign[1] - 1) % 10 != 9 && (activity_shape_temp_sign[2] - 1) % 10 != 9 && (activity_shape_temp_sign[3] - 1) % 10 != 9) {
+                        activity_shape_xy.splice(0, 1);
+                    }
+
+                    console.log(activity_shape_temp_sign)
                     //activity_shape_xy.unshift(0);
                     break
-                case 4:             //右
+                case 4:
                     //activity_shape_xy.splice(150, 1);
-                    activity_shape_xy.unshift(0);
+                    // activity_shape_xy.unshift(0);
+                    console.log(activity_shape_temp_sign[3] + 1)
+                    if ((activity_shape_temp_sign[0] + 1) % 10 != 0 && (activity_shape_temp_sign[1] + 1) % 10 != 0 && (activity_shape_temp_sign[2] + 1) % 10 != 0 && (activity_shape_temp_sign[3] + 1) % 10 != 0) {
+                        activity_shape_xy.unshift(0);
+                    }
+
                     break
             }
         }
