@@ -62,10 +62,7 @@
     <div style="margin-left: 20px">
         <h3>得分</h3>
         <button id="start">开始</button>
-        <button id="create">渲染</button>
         <button id="transform">转移</button>
-        <button id="auto">自动</button>
-
     </div>
 </div>
 <script type="text/javascript" src="jquery-1.8.3.min.js"></script>
@@ -85,9 +82,6 @@
 
     var next_shape_map_block = $(".next_shape_map").find("td"); // 子地图
     var main_map_block = $(".main_map").find("td"); // 主地图
-
-    // var create_block_num = 0;
-    // var map_block_num = 0;
 
     /*地图初始化*/
     var activity_shape_xy = new Array(150)
@@ -123,36 +117,41 @@
         }
     }
 
-    function activity_shape() {
-    }
-
     /* 地图刷新 */
     function map() {
         for (let i = 0; i < map_shape_xy.length; i++) {
             if (activity_shape_xy[i] == 1 || activity_shape_xy[i] == 2 || map_shape_xy[i] == 2) {
                 main_map_block[i].style.background = "red";
             }
+            main_map_block[i].innerHTML = i;
         }
     }
 
     /* 非永久位置清空 */
     function init() {
         for (let i = 0; i < activity_shape_xy.length; i++) {
-            if (activity_shape_xy[i] != 2 || activity_shape_xy[i] != 3) {
-                if (main_map_block[i] != undefined) {
-                    main_map_block[i].style.background = "white";
-                }
+            if ((activity_shape_xy[i] != 2 || activity_shape_xy[i] != 3) && main_map_block[i] != undefined) {
+                main_map_block[i].style.background = "white";
             }
         }
     }
 
-    function control() {
+    /*旋转*/
+    function rotate() {
+        let MAX = 0;
+        for (let i = 0; i < activity_shape_xy.length; i++) {
+            if (activity_shape_xy[i] == 1) {
+                console.log(i)
+            }
+        }
+
     }
 
-    function move_down() {
-
+    /*控制移动*/
+    function control_move(e) {
+        console.log(e)
         let MAX = 0;
-        let activity_shape_temp_sign = [];
+        var activity_shape_temp_sign = [];
         let j = 0;
         for (let i = 0; i < activity_shape_xy.length; i++) {
             if (activity_shape_xy[i] == 1) {
@@ -165,59 +164,70 @@
         if (activity_shape_xy[MAX + 10] == undefined ||
             map_shape_xy[activity_shape_temp_sign[0] + 10] == 2 || map_shape_xy[activity_shape_temp_sign[1] + 10] == 2 ||
             map_shape_xy[activity_shape_temp_sign[2] + 10] == 2 || map_shape_xy[activity_shape_temp_sign[3] + 10] == 2) {
-            for (let i = 0; i < map_shape_xy.length; i++) {//切实
+            for (let i = 0; i < map_shape_xy.length; i++) { // ==> 转实 2
                 if (activity_shape_xy[i] == 1) {
                     map_shape_xy[i] = 2;
                 }
                 activity_shape_xy[i] = 0;
             }
         } else {
-            activity_shape_xy.splice(141, 10);
-            activity_shape_xy.unshift(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            switch (e) {
+
+                case 1:
+
+                    break;
+
+                case 2:
+                    activity_shape_xy.splice(141, 10);
+                    activity_shape_xy.unshift(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+                    break;
+
+                case 3:
+                    if ((activity_shape_temp_sign[0] - 1) % 10 != 9 && (activity_shape_temp_sign[1] - 1) % 10 != 9 && (activity_shape_temp_sign[2] - 1) % 10 != 9 && (activity_shape_temp_sign[3] - 1) % 10 != 9) {
+                        activity_shape_xy.splice(0, 1);
+                        activity_shape_xy.push(0);
+                    }
+                    break
+                case 4:
+                    if ((activity_shape_temp_sign[0] + 1) % 10 != 0 && (activity_shape_temp_sign[1] + 1) % 10 != 0 && (activity_shape_temp_sign[2] + 1) % 10 != 0 && (activity_shape_temp_sign[3] + 1) % 10 != 0) {
+                        activity_shape_xy.unshift(0);
+                        activity_shape_xy.splice(150, 1);
+                    }
+                    break
+            }
         }
         init();
         map();
+        rotate();
     }
 
-    function to_save_2(){
-
-    }
 
     $("button#start").click(function () {
-        let r_num = Math.ceil(Math.random() * 6);
+        let r_num = parseInt(7*Math.random());
         next_shape(r_num);
         next_shape_show();
-    })
-
-    $("button#create").click(function () {
-
+        console.log(next_shape_xy)
     })
 
     $("button#transform").click(function () {
         init();
         map_transform();
         map();
-    })
-    //var down_num = 0;
-    $("button#auto").click(function () {
-        move_down()
+
     })
 
     $(document).keydown(function (event) {
         var e = event || window.event
         if (e.keyCode == 38) {  //上
-            console.log("上");
         } else if (e.keyCode == 40) { //下
-            console.log("下");
-            move_down();
+            control_move(2);
         } else if (e.keyCode == 37) { //左
-            console.log("左");
+            control_move(3);
         } else if (e.keyCode == 39) { //右
-            console.log("右");
+            control_move(4);
         }
+
     });
-
-
 </script>
 </body>
 </html>  

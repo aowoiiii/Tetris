@@ -17,11 +17,7 @@
             background-color: white;
         }
 
-        .next_shape_map {
-            background-color: black;
-        }
-
-        .main_map {
+        .map_next_shape, .map_main {
             background-color: black;
         }
 
@@ -34,7 +30,7 @@
 
 <body>
 <div style="float: left;">
-    <table class="main_map">
+    <table class="map_main">
         <script>
             for (var row = 0; row < 15; row++) {
                 document.write("<tr>");
@@ -48,7 +44,7 @@
 </div>
 
 <div style="float:left;">
-    <table style="margin-left: 20px" class="next_shape_map">
+    <table style="margin-left: 20px" class="map_next_shape">
         <script>
             for (var row = 0; row < 4; row++) {
                 document.write("<tr>");
@@ -68,20 +64,23 @@
 <script type="text/javascript" src="jquery-1.8.3.min.js"></script>
 <script>
     const shapes = [
-        [[1, 1], [1, 2], [1, 3], [2, 3]],  // 1
-        [[2, 1], [2, 2], [1, 3], [2, 3]],  // 2
-        [[1, 1], [2, 1], [0, 2], [1, 2]],  // 3
-        [[0, 1], [1, 1], [1, 2], [2, 2]],  // 4
-        [[1, 1], [2, 1], [1, 2], [2, 2]],  // 5
-        [[1, 0], [1, 1], [1, 2], [1, 3]],  // 6
-        [[1, 1], [0, 2], [1, 2], [2, 2]],  // 7
+        [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0],  // 1
+        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0],  // 2
+        [0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0],  // 3
+        [0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0],  // 4
+        [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],  // 5
+        [0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],  // 6
+        [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0],  // 7
     ];
 
-    var next_shape_xy = [];
     var map_shape_xy = new Array(150);
-
-    var next_shape_map_block = $(".next_shape_map").find("td"); // 子地图
-    var main_map_block = $(".main_map").find("td"); // 主地图
+    var map_next_shape = $(".map_next_shape").find("td");   // 子地图 - 子元素为td块
+    var map_main = $(".map_main").find("td");   // 主地图 - 子元素为td块
+    var shape_next = []; //下一个图形 坐标
+    var shape_temp_transform = []; //临时缓存地图 与 next_shape_xy相同
+    var shape_activity = [] //活动图形
+    var control_x = 0;
+    var control_y = 0;
 
     /*地图初始化*/
     var activity_shape_xy = new Array(150)
@@ -89,122 +88,84 @@
         activity_shape_xy[i] = 0;
     }
 
-    /* 下一个方块 坐标换算 */
+    /* 小地图 下一个方块 生成 渲染*/
     function next_shape(r_num) {
+        shape_temp_transform = shapes [r_num]; //临时转移
         console.log("下一个方块代码:" + parseInt(r_num + 1))
-        for (let i = 0; i < shapes[r_num].length; i++) {
-            let x = shapes[r_num][i][0];
-            let y = shapes[r_num][i][1];
-            next_shape_xy[i] = [x, y];  //小地图坐标
-        }
-    }
-
-    /* 下一个方块渲染 */
-    function next_shape_show() {
-        for (let i = 0; i < next_shape_map_block.length; i++) {
-            next_shape_map_block[i].style.background = "white";
-        }
-
-        for (let i = 0; i < next_shape_xy.length; i++) {
-            next_shape_map_block[next_shape_xy[i][0] + next_shape_xy[i][1] * 4].style.background = "red";
+        for (let i in shapes[r_num]) {
+            map_next_shape[i].innerHTML = i;
+            map_next_shape[i].style.background = "white";
+            if (shapes[r_num][i] == 1) {
+                map_next_shape[i].style.background = "red";
+            }
         }
     }
 
     /* NEXT_SHAPE => ACTIVITY_SHAPE */
-    function map_transform() {
-        for (let i = 0; i < next_shape_xy.length; i++) {
-            activity_shape_xy[next_shape_xy[i][0] + next_shape_xy[i][1] * 10 + 3] = 1; // 坐标转移并向右偏移 3
+    function temp_transform(x = 0, y = 0) {
+        shape_activity = [];
+        activity_shape_xy = [];
+
+        for (let i in shape_temp_transform) {
+            if (shape_temp_transform[i] == 1) {
+                shape_activity.push([(i % 4 + x), parseInt(i / 4 + y)])
+            }
         }
+        for (let i in shape_activity) {
+            activity_shape_xy[shape_activity[i][0] + shape_activity[i][1] * 10] = 1;
+        }
+        console.log(shape_temp_transform)
+        console.log(shape_activity);
+        console.log(activity_shape_xy)
     }
 
-    /* 地图刷新 */
+    /* 大地图  形状生成 刷新 渲染  */
     function map() {
         for (let i = 0; i < map_shape_xy.length; i++) {
-            if (activity_shape_xy[i] == 1 || activity_shape_xy[i] == 2 || map_shape_xy[i] == 2) {
-                main_map_block[i].style.background = "red";
+            map_main[i].style.background = "white";
+            if (activity_shape_xy[i] == 1 || map_shape_xy[i] == 2) {
+                map_main[i].style.background = "red";
             }
-            main_map_block[i].innerHTML = i;
+            map_main[i].innerHTML = i;
         }
     }
 
-    /* 非永久位置清空 */
-    function init() {
-        for (let i = 0; i < activity_shape_xy.length; i++) {
-            if ((activity_shape_xy[i] != 2 || activity_shape_xy[i] != 3) && main_map_block[i] != undefined) {
-                main_map_block[i].style.background = "white";
-            }
-        }
-    }
-
+    /*控制移动*/
     function control_move(e) {
-        console.log(e)
-        let MAX = 0;
-        let activity_shape_temp_sign = [];
-        let j = 0;
-        for (let i = 0; i < activity_shape_xy.length; i++) {
-            if (activity_shape_xy[i] == 1) {
-                activity_shape_temp_sign [j] = i;
-                j++;
-                if (i > MAX) MAX = i;
-            }
+        switch (e) {
+            case 2:
+                temp_transform(control_x, ++control_y);
+                break;
+            case 3:
+                temp_transform(--control_x, control_y);
+                break;
+            case 4:
+                temp_transform(++control_x, control_y);
+                break;
         }
-
-        if (activity_shape_xy[MAX + 10] == undefined ||
-            map_shape_xy[activity_shape_temp_sign[0] + 10] == 2 || map_shape_xy[activity_shape_temp_sign[1] + 10] == 2 ||
-            map_shape_xy[activity_shape_temp_sign[2] + 10] == 2 || map_shape_xy[activity_shape_temp_sign[3] + 10] == 2) {
-            for (let i = 0; i < map_shape_xy.length; i++) { // ==> 转实 2
-                if (activity_shape_xy[i] == 1) {
-                    map_shape_xy[i] = 2;
-                }
-                activity_shape_xy[i] = 0;
-            }
-        } else {
-            switch (e) {
-
-                case 1:
-
-                    break;
-
-                case 2:
-                    activity_shape_xy.splice(141, 10);
-                    activity_shape_xy.unshift(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-                    break;
-
-                case 3:
-                    if ((activity_shape_temp_sign[0] - 1) % 10 != 9 && (activity_shape_temp_sign[1] - 1) % 10 != 9 && (activity_shape_temp_sign[2] - 1) % 10 != 9 && (activity_shape_temp_sign[3] - 1) % 10 != 9) {
-                        activity_shape_xy.splice(0, 1);
-                        activity_shape_xy.push(0);
-                    }
-                    break
-                case 4:
-                    if ((activity_shape_temp_sign[0] + 1) % 10 != 0 && (activity_shape_temp_sign[1] + 1) % 10 != 0 && (activity_shape_temp_sign[2] + 1) % 10 != 0 && (activity_shape_temp_sign[3] + 1) % 10 != 0) {
-                        activity_shape_xy.unshift(0);
-                        activity_shape_xy.splice(150, 1);
-                    }
-
-                    break
-            }
-        }
-        init();
         map();
     }
 
 
     $("button#start").click(function () {
-        let r_num = Math.ceil(Math.random() * 6);
+        let r_num = parseInt(7 * Math.random());
         next_shape(r_num);
-        next_shape_show();
+        //next_shape_show();
+        //console.log(next_shape_xy)
     })
 
     $("button#transform").click(function () {
-        init();
-        map_transform();
+        // init();
+        // map_transform();
+        // map();
+        temp_transform()
         map();
     })
 
     $(document).keydown(function (event) {
         var e = event || window.event
-        if (e.keyCode == 38) {  //上
+        if (e.keyCode == 38) {        //上
+            control_move(1)
         } else if (e.keyCode == 40) { //下
             control_move(2);
         } else if (e.keyCode == 37) { //左
