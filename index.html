@@ -140,19 +140,7 @@
     }
 
     function control_move(e) {
-        console.log(e)
-        let MAX = 0;
-        let activity_shape_temp_sign = [];
-        let j = 0;
-        for (let i = 0; i < activity_shape_xy.length; i++) {
-            if (activity_shape_xy[i] == 1) {
-                activity_shape_temp_sign [j] = i;
-                j++;
-                if (i > MAX) MAX = i;
-            }
-        }
-
-        if (activity_shape_xy[MAX + 10] == undefined ||
+        if (activity_shape_xy[activity_shape_temp_sign[3] + 10] == undefined ||
             map_shape_xy[activity_shape_temp_sign[0] + 10] == 2 || map_shape_xy[activity_shape_temp_sign[1] + 10] == 2 ||
             map_shape_xy[activity_shape_temp_sign[2] + 10] == 2 || map_shape_xy[activity_shape_temp_sign[3] + 10] == 2) {
             for (let i = 0; i < map_shape_xy.length; i++) { // ==> 转实 2
