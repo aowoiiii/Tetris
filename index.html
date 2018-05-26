@@ -138,10 +138,22 @@
             }
         }
     }
-    
+
     // 控制移动
     function control_move(e) {
-        if (activity_shape_xy[activity_shape_temp_sign[3] + 10] == undefined ||
+        console.log(e)
+        let MAX = 0;
+        let activity_shape_temp_sign = [];
+        let j = 0;
+        for (let i = 0; i < activity_shape_xy.length; i++) {
+            if (activity_shape_xy[i] == 1) {
+                activity_shape_temp_sign [j] = i;
+                j++;
+                if (i > MAX) MAX = i;
+            }
+        }
+
+        if (map_shape_xy[MAX + 10] == undefined ||
             map_shape_xy[activity_shape_temp_sign[0] + 10] == 2 || map_shape_xy[activity_shape_temp_sign[1] + 10] == 2 ||
             map_shape_xy[activity_shape_temp_sign[2] + 10] == 2 || map_shape_xy[activity_shape_temp_sign[3] + 10] == 2) {
             for (let i = 0; i < map_shape_xy.length; i++) { // ==> 转实 2
@@ -153,21 +165,21 @@
         } else {
             switch (e) {
 
-                case 1:
+                case 1:             //上
 
                     break;
 
-                case 2:
+                case 2:             //下
                     activity_shape_xy.splice(141, 10);
                     activity_shape_xy.unshift(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
                     break;
 
-                case 3:
+                case 3:             //左
                     activity_shape_xy.splice(0, 1);
                     //activity_shape_xy.unshift(0);
                     break
-                case 4:
-                    activity_shape_xy.splice(150, 1);
+                case 4:             //右
+                    //activity_shape_xy.splice(150, 1);
                     activity_shape_xy.unshift(0);
                     break
             }
