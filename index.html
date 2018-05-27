@@ -51,7 +51,7 @@
         </script>
     </table>
     <div style="margin-left: 20px">
-        <h3 class="score:">得分</h3>
+        <h3 class="score">得分：</h3>
         <button id="start">开始</button>
     </div>
 </div>
@@ -105,7 +105,7 @@
                 if (map_shape_xy[i * 10 + j] == 2) num++;
                 if (num == 10) {
                     score += 10;
-                    $(".score")[0].innerHTML += score;
+                    $(".score")[0].innerHTML = "得分:" + score;
                     console.log(i + ":消除;分数:" + score)
                     num = 0;
                     map_shape_xy.splice(i * 10, 10);
@@ -113,7 +113,6 @@
                 }
             }
         }
-
         if (shape_activity.map(x => x[0]).map(x => x < 0 || x > 9).filter(x => x == true)[0]) {
             return control_x = temp_x[0]
         } else if (shape_activity.map(y => y[1]).map(y => y > 14).filter(y => y == true)[0] || shape_activity.map(n => map_shape_xy[n[0] + n[1] * 10] == 2).filter(n => n == true)[0]) {
