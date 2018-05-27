@@ -1,3 +1,3 @@
 # Tetris_js
-use jquery + a part es6
+use jquery + part of es6
 
