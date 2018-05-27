@@ -54,6 +54,7 @@
         <h3>得分</h3>
         <button id="start">开始</button>
         <button id="transform">转移</button>
+        <button id="create">大地图生成</button>
     </div>
 </div>
 <script type="text/javascript" src="jquery-1.8.3.min.js"></script>
@@ -69,6 +70,7 @@
         [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0],  // 7
     ];
     var r_num;
+    var score = 0;
     var shape_activity_temp = [];
     var temp_x = [], temp_y = []; // 边缘接触记录
     var control_x = 0, control_y = 0; //方向控制记录
@@ -79,9 +81,7 @@
     var activity_shape_xy = new Array(150)
     var map_shape_xy = new Array(150);
 
-    /* 小地图 下一个方块 生成 渲染*/
-    function next_shape(r_num) {
-        shape_temp_transform = shapes [r_num]; //临时转移
+    function next_shape(r_num) {    /* 小地图 下一个方块 生成 渲染*/
         console.log("下一个方块代码:" + parseInt(r_num + 1))
         for (i in shapes[r_num]) {
             map_next_shape[i].innerHTML = i;
@@ -90,13 +90,12 @@
         }
     }
 
-    /* NEXT_SHAPE => ACTIVITY_SHAPE 左，右，下*/
-    function temp_transform(x = 0, y = 0) {
+    function temp_transform(x = 0, y = 0) {     /* 左，右，下*/
         shape_activity = [], activity_shape_xy = []; //清空
         for (i in shape_temp_transform) {
             if (shape_temp_transform[i] == 1) {
                 shape_activity.push([(i % 4 + x + 3), parseInt(i / 4 + y + (() => {
-                    if (r_num != 5) return 0;  // 位置归零判断 非直线图形向上偏移
+                    if (r_num != 5) return -1;  // 位置归零判断 非直线图形向上偏移
                     return 0
                 })())])
             }
@@ -106,14 +105,23 @@
             let num = 0;
             for (let j = 0; j < 10; j++) {
                 if (map_shape_xy[i * 10 + j] == 2) num++;
-                if (num == 10) console.log(i + ":消除")
+                if (num == 10) {
+                    score += 10;
+                    console.log(i + ":消除;分数:" + score)
+                    num = 0;
+                    map_shape_xy.splice(i * 10, 10);
+                    map_shape_xy.unshift(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+                }
             }
         }
 
         if (shape_activity.map(x => x[0]).map(x => x < 0 || x > 9).filter(x => x == true)[0]) {
             return control_x = temp_x[0]
         } else if (shape_activity.map(y => y[1]).map(y => y > 14).filter(y => y == true)[0] || shape_activity.map(n => map_shape_xy[n[0] + n[1] * 10] == 2).filter(n => n == true)[0]) {
-            console.log("存储2")
+            console.log("存储")
+            shape_temp_transform = shapes [r_num]; //新生成
+            r_num = parseInt(7 * Math.random());
+            next_shape(r_num);
             control_x = control_y = 0;
             temp_x[0] = temp_y[0] = 0;
             for (i in shape_activity_temp) {
@@ -131,7 +139,7 @@
         map();
     }
 
-    function rotate() { //旋转
+    function rotate() {  /* 旋转 */
         let new_shape_transform = [];
         for (let i in shape_temp_transform) {
             new_shape_transform[i] = shape_temp_transform [rotate_method[i]];
@@ -140,8 +148,7 @@
         temp_transform(control_x, control_y);
     }
 
-    /* 大地图  形状生成 刷新 渲染  */
-    function map() {
+    function map() {    /* 大地图  形状生成 刷新 渲染  */
         for (let i = 0; i < map_shape_xy.length; i++) {
             map_main[i].style.background = "white";
             if (activity_shape_xy[i] == 1 || map_shape_xy[i] == 2) {
@@ -149,48 +156,26 @@
             }
             map_main[i].innerHTML = i;
         }
-    }
-
-    /*控制移动*/
-    function control_move(e) {
-        switch (e) {
-            case 1:
-                rotate()
-                break
-            case 2:
-                temp_transform(control_x, ++control_y);
-                break;
-            case 3:
-                temp_transform(--control_x, control_y);
-                break;
-            case 4:
-                temp_transform(++control_x, control_y);
-                break;
-        }
+        console.log()
     }
 
     r_num = parseInt(7 * Math.random());
     next_shape(r_num);
     $("button#start").click(function () {
-        temp_transform();
-        setInterval(function () {
-        }, 1000);
+        shape_temp_transform = shapes [r_num];  // NEXT_SHAPE => ACTIVITY_SHAPE
+        temp_transform()
+        setInterval(() => temp_transform(control_x, ++control_y), 1000);
     })
-    $("button#transform").click(function () {
-        r_num = parseInt(7 * Math.random());
-        next_shape(r_num);
-        temp_transform();
-    })
-    $(document).keydown(function (event) {
-        var e = event || window.event
+
+    $(document).keydown(function (e = event || window.event) {
         if (e.keyCode == 38) {         //上
-            control_move(1)
+            rotate();
         } else if (e.keyCode == 40) { //下
-            control_move(2);
+            temp_transform(control_x, ++control_y);
         } else if (e.keyCode == 37) { //左
-            control_move(3);
+            temp_transform(--control_x, control_y);
         } else if (e.keyCode == 39) { //右
-            control_move(4);
+            temp_transform(++control_x, control_y);
         }
     });
 </script>
