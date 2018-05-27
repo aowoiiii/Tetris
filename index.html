@@ -21,13 +21,8 @@
             background-color: black;
         }
 
-        .background_red {
-            background-color: red;
-        }
-
     </style>
 </head>
-
 <body>
 <div style="float: left;">
     <table class="map_main">
@@ -63,6 +58,7 @@
 </div>
 <script type="text/javascript" src="jquery-1.8.3.min.js"></script>
 <script>
+    const rotate_method = [3, 7, 11, 15, 2, 6, 10, 14, 1, 5, 9, 13, 0, 4, 8, 12]
     const shapes = [
         [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0],  // 1
         [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0],  // 2
@@ -72,51 +68,76 @@
         [0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],  // 6
         [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0],  // 7
     ];
-
-    var map_shape_xy = new Array(150);
+    var r_num;
+    var shape_activity_temp = [];
+    var temp_x = [], temp_y = []; // 边缘接触记录
+    var control_x = 0, control_y = 0; //方向控制记录
     var map_next_shape = $(".map_next_shape").find("td");   // 子地图 - 子元素为td块
     var map_main = $(".map_main").find("td");   // 主地图 - 子元素为td块
-    var shape_next = []; //下一个图形 坐标
     var shape_temp_transform = []; //临时缓存地图 与 next_shape_xy相同
     var shape_activity = [] //活动图形
-    var control_x = 0;
-    var control_y = 0;
-
-    /*地图初始化*/
     var activity_shape_xy = new Array(150)
-    for (let i = 0; i < activity_shape_xy.length; i++) {
-        activity_shape_xy[i] = 0;
-    }
+    var map_shape_xy = new Array(150);
 
     /* 小地图 下一个方块 生成 渲染*/
     function next_shape(r_num) {
         shape_temp_transform = shapes [r_num]; //临时转移
         console.log("下一个方块代码:" + parseInt(r_num + 1))
-        for (let i in shapes[r_num]) {
+        for (i in shapes[r_num]) {
             map_next_shape[i].innerHTML = i;
             map_next_shape[i].style.background = "white";
-            if (shapes[r_num][i] == 1) {
-                map_next_shape[i].style.background = "red";
-            }
+            if (shapes[r_num][i] == 1) map_next_shape[i].style.background = "red";
         }
     }
 
-    /* NEXT_SHAPE => ACTIVITY_SHAPE */
+    /* NEXT_SHAPE => ACTIVITY_SHAPE 左，右，下*/
     function temp_transform(x = 0, y = 0) {
-        shape_activity = [];
-        activity_shape_xy = [];
-
-        for (let i in shape_temp_transform) {
+        shape_activity = [], activity_shape_xy = []; //清空
+        for (i in shape_temp_transform) {
             if (shape_temp_transform[i] == 1) {
-                shape_activity.push([(i % 4 + x), parseInt(i / 4 + y)])
+                shape_activity.push([(i % 4 + x + 3), parseInt(i / 4 + y + (() => {
+                    if (r_num != 5) return 0;  // 位置归零判断 非直线图形向上偏移
+                    return 0
+                })())])
             }
         }
-        for (let i in shape_activity) {
-            activity_shape_xy[shape_activity[i][0] + shape_activity[i][1] * 10] = 1;
+
+        for (let i = 0; i < 15; i++) {
+            let num = 0;
+            for (let j = 0; j < 10; j++) {
+                if (map_shape_xy[i * 10 + j] == 2) num++;
+                if (num == 10) console.log(i + ":消除")
+            }
         }
-        console.log(shape_temp_transform)
-        console.log(shape_activity);
-        console.log(activity_shape_xy)
+
+        if (shape_activity.map(x => x[0]).map(x => x < 0 || x > 9).filter(x => x == true)[0]) {
+            return control_x = temp_x[0]
+        } else if (shape_activity.map(y => y[1]).map(y => y > 14).filter(y => y == true)[0] || shape_activity.map(n => map_shape_xy[n[0] + n[1] * 10] == 2).filter(n => n == true)[0]) {
+            console.log("存储2")
+            control_x = control_y = 0;
+            temp_x[0] = temp_y[0] = 0;
+            for (i in shape_activity_temp) {
+                map_shape_xy [shape_activity_temp[i][0] + shape_activity_temp[i][1] * 10] = 2;
+            }
+            return control_y = temp_y[0];
+        } else {
+            shape_activity_temp = [];
+            for (i in shape_activity) {
+                activity_shape_xy[shape_activity[i][0] + shape_activity[i][1] * 10] = 1;
+            }
+            temp_x[0] = control_x, temp_y[0] = control_y;
+        }
+        shape_activity_temp = shape_activity;
+        map();
+    }
+
+    function rotate() { //旋转
+        let new_shape_transform = [];
+        for (let i in shape_temp_transform) {
+            new_shape_transform[i] = shape_temp_transform [rotate_method[i]];
+        }
+        shape_temp_transform = new_shape_transform;
+        temp_transform(control_x, control_y);
     }
 
     /* 大地图  形状生成 刷新 渲染  */
@@ -133,6 +154,9 @@
     /*控制移动*/
     function control_move(e) {
         switch (e) {
+            case 1:
+                rotate()
+                break
             case 2:
                 temp_transform(control_x, ++control_y);
                 break;
@@ -143,28 +167,23 @@
                 temp_transform(++control_x, control_y);
                 break;
         }
-        map();
     }
 
-
+    r_num = parseInt(7 * Math.random());
+    next_shape(r_num);
     $("button#start").click(function () {
-        let r_num = parseInt(7 * Math.random());
-        next_shape(r_num);
-        //next_shape_show();
-        //console.log(next_shape_xy)
+        temp_transform();
+        setInterval(function () {
+        }, 1000);
     })
-
     $("button#transform").click(function () {
-        // init();
-        // map_transform();
-        // map();
-        temp_transform()
-        map();
+        r_num = parseInt(7 * Math.random());
+        next_shape(r_num);
+        temp_transform();
     })
-
     $(document).keydown(function (event) {
         var e = event || window.event
-        if (e.keyCode == 38) {        //上
+        if (e.keyCode == 38) {         //上
             control_move(1)
         } else if (e.keyCode == 40) { //下
             control_move(2);
