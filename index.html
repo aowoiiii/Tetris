@@ -83,7 +83,6 @@
     function next_shape(r_num) {    /* 小地图 下一个方块 生成 渲染*/
         console.log("下一个方块代码:" + parseInt(r_num + 1))
         for (i in shapes[r_num]) {
-            map_next_shape[i].innerHTML = i;
             map_next_shape[i].style.background = "white";
             if (shapes[r_num][i] == 1) map_next_shape[i].style.background = "red";
         }
@@ -165,7 +164,6 @@
             if (activity_shape_xy[i] == 1 || map_shape_xy[i] == 2) {
                 map_main[i].style.background = "red";
             }
-            map_main[i].innerHTML = i;
         }
     }
 
