@@ -4,23 +4,9 @@
     <title>NEW 俄罗斯方块 </title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <style>
-        table {
-            border: 1px solid black
-        }
-
-        td {
-            border: 1px solid;
-            border-color: rgba(0, 0, 0, 0);
-            width: 20px;
-            height: 20px;
-            font-size: 4px;
-            background-color: white;
-        }
-
-        .map_next_shape, .map_main {
-            background-color: black;
-        }
-
+        table {border: 1px solid black}
+        td {border: 1px solid;border-color: rgba(0, 0, 0, 0);width: 20px;height: 20px;font-size: 4px;background-color: white;}
+        .map_next_shape, .map_main {background-color: black;}
     </style>
 </head>
 <body>
@@ -53,12 +39,12 @@
     <div style="margin-left: 20px">
         <h3 class="score">得分：</h3>
         <button id="start">开始</button>
-        <button id="ls">临时</button>
     </div>
 </div>
 <script type="text/javascript" src="jquery-1.8.3.min.js"></script>
 <script>
     const rotate_method = [3, 7, 11, 15, 2, 6, 10, 14, 1, 5, 9, 13, 0, 4, 8, 12]
+    const rotate_method2 = [0, 1, 2, 3, 6, 10, 14, 7, 5, 9, 13, 11, 4, 8, 12, 15]
     const shapes = [
         [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0],  // 1
         [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0],  // 2
@@ -68,6 +54,7 @@
         [0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],  // 6
         [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0],  // 7
     ];
+    var rotate_flag = true;
     var timer;
     var score = 0;
     var map_next_shape = $(".map_next_shape").find("td");   // 子地图 - 子元素为td块
@@ -77,34 +64,25 @@
     var map_shape_xy = new Array(150);
     var control_x = 0, control_y = 0; //方向控制记录
     var temp_x = [], temp_y = [], r_num = [], red_num = []; // 边缘接触记录,随机数,红点标数量
-
     function next_shape() {    /* 小地图 下一个方块 生成 渲染*/
-        console.log("执行下一个图形,下一个方块代码:" + parseInt(r_num[0]))
         for (i in shapes[r_num[0]]) {
             map_next_shape[i].style.background = "white";
             if (shapes[r_num[0]][i] == 1) map_next_shape[i].style.background = "red";
         }
     }
-
+    let shape_activity = []
     function move(x, y, e) {
-        console.log("载入的随机方块代码是" + r_num[1])
         let z = -1;
-        if (r_num[1] == 5 || r_num[0] == 5) z = 0
-        console.log("执行move", x, y, e)
+        if (r_num[1] == undefined && r_num[0] == 5 || r_num[1] == 5) z = 0
         let shape_activity = [];
         activity_shape_xy = []; //清空
-        for (i in shape_temp_transform) {
-            if (shape_temp_transform[i] == 1) shape_activity.push([(i % 4 + x + 3), parseInt(i / 4 + y + z)])
-        }
+        for (i in shape_temp_transform) if (shape_temp_transform[i] == 1) shape_activity.push([(i % 4 + x + 3), parseInt(i / 4 + y + z)])
+        rotate_flag = ((shape_activity.map(x => x[1] * 10 + x[0]).map(n => map_shape_xy[n + 1] == 2).filter(n => n == true)[0] || shape_activity.map(x => x[1] * 10 + x[0]).map(n => map_shape_xy[n - 1] == 2).filter(n => n == true)[0]))
         if (shape_activity.map(x => x[0]).map(x => x < 0 || x > 9).filter(x => x == true)[0] || ((e == 37 || e == 39) && shape_activity.map(n => map_shape_xy[n[0] + n[1] * 10] == 2).filter(n => n == true)[0])) {
-            console.log("执行边缘判断")
             return control_x = temp_x[0], control_y = temp_y[0];
         } else if (shape_activity.map(y => y[1]).map(y => y > 14).filter(y => y == true)[0] || shape_activity.map(n => map_shape_xy[n[0] + n[1] * 10] == 2).filter(n => n == true)[0]) {
-            console.log("执行底部判断")
             shape_temp_transform = shapes [r_num[1]]; // =2 转移
-            for (i in shape_activity) {
-                map_shape_xy[shape_activity[i][0] + shape_activity[i][1] * 10 - 10] = 2
-            }
+            for (i in shape_activity) map_shape_xy[shape_activity[i][0] + shape_activity[i][1] * 10 - 10] = 2
             for (let i = 0; i < 15; i++) {
                 let num = 0;
                 for (let j = 0; j < 10; j++) {
@@ -125,16 +103,13 @@
             shape_transform()
         }
         else {
-            for (i in shape_activity) {
-                activity_shape_xy[shape_activity[i][0] + shape_activity[i][1] * 10] = 1;
-            }
+            for (i in shape_activity) activity_shape_xy[shape_activity[i][0] + shape_activity[i][1] * 10] = 1;
             temp_x[0] = control_x, temp_y[0] = control_y;
         }
         map()
     }
 
     function GG() {
-        console.log("执行GG")
         red_num.unshift(map_main.map(function (n, m) {
             if (m.style.background == "red") return n
         }).length)
@@ -147,35 +122,35 @@
     }
 
     function map() {    /* 大地图 刷新 渲染  */
-        console.log("执行MAP")
         for (let i = 0; i < map_shape_xy.length; i++) {
             map_main[i].style.background = "white";
-            if (activity_shape_xy[i] == 1 || map_shape_xy[i] == 2) {
-                map_main[i].style.background = "red";
-            }
+            if (activity_shape_xy[i] == 1 || map_shape_xy[i] == 2) map_main[i].style.background = "red";
             map_main[i].innerHTML = i;
         }
     }
 
     function shape_rotate() {  /* 旋转 */
-        console.log("执行旋转")
         let new_shape_transform = [];
+        console.log(r_num[1])
         for (let i in shape_temp_transform) {
-            new_shape_transform[i] = shape_temp_transform [rotate_method[i]];
+            if (r_num[1] == 5 || r_num[1] == 4) {
+                new_shape_transform[i] = shape_temp_transform [rotate_method[i]];
+            } else {
+                new_shape_transform[i] = shape_temp_transform [rotate_method2[i]];
+            }
         }
+        rotate_flag = true;
         shape_temp_transform = new_shape_transform;
         move(control_x, control_y);
     }
 
     function shape_create() {
-        console.log("执行创建")
         control_x = control_y = 0; //清空
         r_num.unshift(parseInt(7 * Math.random()));
-        next_shape(r_num[0]);
+        next_shape();
     }
 
     function shape_transform() {
-        console.log("执行转移")
         shape_temp_transform = shapes [r_num[0]]; //
         move(0, 0);
         shape_create();
@@ -184,19 +159,14 @@
     $("button#start").click(function () {
         shape_create()
         shape_transform();
-        // timer = setInterval(() => move(control_x, ++control_y), 1000);
-    })
-    $("button#ls").click(function () {
-        shape_transform();
     })
 
     $(document).keydown(function (e = event || window.event) {
-        if (e.keyCode == 38) shape_rotate();
+        if (e.keyCode == 38 && !rotate_flag) shape_rotate();
         else if (e.keyCode == 40) move(control_x, ++control_y, e.keyCode);
         else if (e.keyCode == 37) move(--control_x, control_y, e.keyCode);
         else if (e.keyCode == 39) move(++control_x, control_y, e.keyCode);
     });
-
 </script>
 </body>
 </html>
