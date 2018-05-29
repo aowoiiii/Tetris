@@ -1,4 +1,4 @@
-![](http://photo.weibo.com/2138609564/wbphotos/large/mid/4245117768557425/pid/7f78979cgy1frsi581dywj20up10j40k)
+![](https://wx1.sinaimg.cn/mw1024/7f78979cgy1frsi581dywj20up10j40k.jpg)
 #### Tetris_js 俄罗斯方块  v2.1  
 演示地址[slimrip.com/tetris](http://slimrip.com/tetris/) 
 ``` 
