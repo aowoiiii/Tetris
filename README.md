@@ -1,5 +1,5 @@
 ![](https://wx1.sinaimg.cn/mw1024/7f78979cgy1frsi581dywj20up10j40k.jpg)
-#### Tetris_js 俄罗斯方块  v2.1  
+#### Tetris_js 俄罗斯方块  v2.2  
 演示地址[slimrip.com/tetris](http://slimrip.com/tetris/) 
 ``` 
 使用部分Jquery选择器与ES6语法 
